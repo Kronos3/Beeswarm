@@ -3,3 +3,7 @@ cdef class Set:
 
 cdef class Clone:
 	cdef public data
+	cdef readonly to_add
+
+cdef class DictSet:
+	cdef public data

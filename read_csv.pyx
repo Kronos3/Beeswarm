@@ -10,6 +10,33 @@ cpdef enum RawIndexMapping:
 	NTOTAL,
 	LOCATION
 
+cdef class DictSet:
+	def __init__ (self, data={}):
+		self.data = data
+	
+	def split_cols(self, indecies, selectors):
+		out = {}
+		
+		for key in self.data:
+			for i in range (len (indecies)):
+				evaled = eval(key)
+				evaled.append (selectors[i])
+				new_key = str(evaled)
+				try:
+					out[new_key]
+				except KeyError:
+					out[new_key] = []
+				for clone in self.data[key]:
+					out[new_key].append (clone.data[indecies[i]])
+		
+		return DictSet(out)
+	
+	def get (self, *args):
+		return self.data[str(list(args))]
+	
+	def __str__ (self):
+		return str(self.data)
+
 cdef class Set:
 	def __init__(self, data=[]):
 		self.data = data
@@ -41,29 +68,41 @@ cdef class Set:
 		return out
 	
 	def split_level (self, prop_list):
-		print (prop_list)
-		out = self.split(prop_list[0])
+		out = {}
 		
-		if len (prop_list) <= 1:
-			return out
+		hash_clone = lambda row,props: str([row[x] for x in props])
 		
-		for t in out:
-			out[t] = out[t].split_level(prop_list[1:])
+		for clone in self.data:
+			__hash = hash_clone(clone.data, prop_list)
+			try:
+				out[__hash]
+			except KeyError:
+				out[__hash] = []
+			out[__hash].append (clone)
 		
 		return out
 
 
 cdef class Clone:
-	def __init__ (self, csv_line, template):
+	def __init__ (self, csv_line, template, ignore_set):
 		self.data = []
+		self.to_add = True
 		for i, x in enumerate(csv_line):
 			if template[i] == 's':
 				self.data.append (x)
 			else:
 				if len (x) == 0:
 					x = 0
+				parsed = x
 				if template[i] == 'i':
-					self.data.append (int (x))
+					parsed = int (parsed)
 				elif template[i] == 'f':
-					self.data.append (float (x))
+					parsed = float (parsed)
+				if i == ignore_set[0] and parsed == ignore_set[1]:
+					self.to_add = False
+					break
+				self.data.append (parsed)
+	
+	def add (self):
+		return self.to_add
 
