@@ -1,6 +1,9 @@
-from beeswarm import *
 from read_csv import Clone, Set, RawIndexMapping, DictSet
 import csv
+from image_counter import ImageCounter
+import matplotlib.pyplot as plt
+from plot_grid import PlotGrid
+
 
 raw_data = []
 for x in csv.reader(open("data.csv", "r")):
@@ -9,18 +12,20 @@ for x in csv.reader(open("data.csv", "r")):
 		raw_data.append(temp)
 
 raw_data = Set(raw_data)
+image_counter = ImageCounter(
+	raw_data.data, RawIndexMapping.MOUSE,
+	RawIndexMapping.IMAGE, RawIndexMapping.POPULATION, RawIndexMapping.DAY)
+image_counter.process()
+
+IMG_MAX = 6
 
 split_data = DictSet(raw_data.split_level([
-	RawIndexMapping.POPULATION, RawIndexMapping.DAY,
-	RawIndexMapping.MOUSE, RawIndexMapping.IMAGE
+	RawIndexMapping.POPULATION, RawIndexMapping.DAY
 ]))
 
 split_location = split_data.split_cols([RawIndexMapping.NBASAL, RawIndexMapping.NSUPRA], ["basal", "supra"])
 
-#print(split_location)
-print (split_location.get ("Dlx1", 3.5,
-                           1, 1,
-                           "basal"))
-
-#beeswarm([d1], method="swarm", l)
-#beeswarm([d1], method="center")
+main_figure = PlotGrid(split_location, image_counter, plt.figure(figsize=(8,11)))
+main_figure.show()
+plt.show()
+plt.savefig("out.png")

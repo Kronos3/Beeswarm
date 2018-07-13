@@ -103,6 +103,9 @@ cdef class Clone:
 					break
 				self.data.append (parsed)
 	
+	def __getitem__ (self, index: int):
+		return self.data[index]
+	
 	def add (self):
 		return self.to_add
 

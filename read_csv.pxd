@@ -1,5 +1,5 @@
 cdef class Set:
-	cpdef public data
+	cdef public data
 
 cdef class Clone:
 	cdef public data
