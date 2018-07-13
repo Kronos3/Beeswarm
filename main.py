@@ -25,7 +25,7 @@ split_data = DictSet(raw_data.split_level([
 
 split_location = split_data.split_cols([RawIndexMapping.NBASAL, RawIndexMapping.NSUPRA], ["basal", "supra"])
 
-main_figure = PlotGrid(split_location, image_counter, plt.figure(figsize=(8,11)))
+main_figure = PlotGrid(split_location, image_counter, [plt.figure(figsize=(8,11)), plt.figure(figsize=(8,11))])
 main_figure.show()
 plt.show()
-plt.savefig("out.png")
+#plt.savefig("out.png")

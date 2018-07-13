@@ -27,10 +27,12 @@ class Plot:
 		self.figure = parent.figure
 		self.plot_tuple = plot_t
 		
-		self.geometric_mean = round(float(stats.gmean([x for x in self.data if x != 0])), 3)
+		self.no_zero = [x for x in self.data if x != 0]
+		
+		self.geometric_mean = round(float(stats.gmean(self.no_zero)), 3)
 		# self.geometric_mean = stats.gmean(self.data)
 		# print (self.data)
-		self.col_per_image = len(self.data) * self.normalize
+		self.col_per_image = len(self.no_zero) * self.normalize
 		self.standard_deviation = round(float(stats.tstd(self.data)), 3)
 		self.graph_label = "%s @ %s, %s" % (sel[0], sel[1], sel[2].replace("supra", "supra-basal"))
 		self.text_index = 0
@@ -47,7 +49,7 @@ class PlotGrid:
 	def __init__(self, data, counter, figure):
 		self.data = data
 		self.image_counter = counter
-		self.figure = figure
+		self.figure = figure[0]
 		self.image_n = counter.get_max()[0]
 		self.plots = []
 		
@@ -61,6 +63,19 @@ class PlotGrid:
 			self.plots.append(temp)
 			
 			i += 1
+		
+		self.figure = figure[1]
+		self.figure.set_tight_layout({"pad": .0})
+		i = 1
+		for key in list(self.data.data.keys())[int(len(self.data.data.keys()) / 2):]:
+			temp = Plot(self, eval(key), (*self.dimensions, i))
+			temp.plot()
+			self.plots.append(temp)
+			
+			i += 1
+		
+		self.figure = figure
 	
 	def show(self):
-		self.figure.show()
+		for fig in self.figure:
+			fig.show()
