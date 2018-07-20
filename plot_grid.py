@@ -15,67 +15,89 @@ def normalize_data(data, normalization_factor):
 	for item in unique:
 		for i in range(int(unique[item] * normalization_factor)):
 			out.append(item)
-	
 	return out
 
 
 class Plot:
-	def __init__(self, parent, sel, plot_t):
+	day_order = (3.5, 7.0, 14.0, 30.0, 60.0, 90.0, 180.0, 365.0)
+	
+	"""
+	:argument parent PlotGrid parent
+	:argument sel 2 Tuple (POPULATION, LOCATION)
+	"""
+	def __init__(self, parent, figure, sel, plot_t, cap):
 		self.parent = parent
-		self.normalize = parent.image_n / len(parent.image_counter.out["%s,%s" % (sel[0], sel[1])])
-		self.data = normalize_data(self.parent.data.get(sel[0], sel[1], sel[2]), self.normalize)
-		self.figure = parent.figure
+		self.cap = cap
+		self.normalize = []
+		self.data = []
+		self.x_labels = []
+		
+		for day in Plot.day_order:
+			c_normal = parent.image_n / len(parent.image_counter.out["%s,%s" % (sel[0], day)])
+			self.normalize.append(c_normal)
+			current_data = normalize_data(self.parent.data.get(sel[0], day, sel[1]), c_normal)
+			
+			gm = round(float(stats.gmean(current_data)), 3)
+			cpi = len(current_data) * c_normal
+			sd = round(float(stats.tstd(current_data)), 3)
+			text = "%s\nx̅: %s\nCol/img: %s\nσ: %s" % (
+				day, gm, cpi, sd)
+			self.x_labels.append(text)
+			self.data.append(Plot.cap(current_data, self.cap))
+		
+		self.figure = figure
 		self.plot_tuple = plot_t
-		
-		self.no_zero = [x for x in self.data if x != 0]
-		
-		self.geometric_mean = round(float(stats.gmean(self.no_zero)), 3)
-		# self.geometric_mean = stats.gmean(self.data)
-		# print (self.data)
-		self.col_per_image = len(self.no_zero) * self.normalize
-		self.standard_deviation = round(float(stats.tstd(self.data)), 3)
-		self.graph_label = "%s @ %s, %s" % (sel[0], sel[1], sel[2].replace("supra", "supra-basal"))
-		self.text_index = 0
+		self.graph_label = "%s population, %s" % (sel[0], sel[1].replace("supra", "supra-basal"))
+	
+	@staticmethod
+	def cap(data, cap):
+		for i in range(len(data)):
+			if data[i] > cap:
+				data[i] = 0
+		return data
 	
 	def plot(self):
-		text = """gmean col size: %s\nCol/img: %s\nμ: %s""" % (self.geometric_mean, self.col_per_image, self.standard_deviation)
-		
-		bs, ax = beeswarm(self.data, method="center", s=3, ax=self.figure.add_subplot(*self.plot_tuple))
+		bs, ax = beeswarm(
+			self.data,
+			method="center",
+			s=.5,
+			__s=10,
+			labelrotation="horizontal",
+			ax=self.figure.add_subplot(*self.plot_tuple), labels=self.x_labels)
+		ax.set_xlabel("Day & frequency")
+		ax.set_ylabel("Colony Size")
 		ax.set_title(self.graph_label)
-		ax.text(1, 1, text, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes)
+		ax.set_ylim(bottom=1, top=self.cap)
+		ax.set_yticks((1, 10, 20, 30, 40, 50))
+		# ax.text(1, 1, text, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes)
 
 
 class PlotGrid:
-	def __init__(self, data, counter, figure):
+	def __init__(self, data, counter, plot, iter_template):
 		self.data = data
 		self.image_counter = counter
-		self.figure = figure[0]
+		self.figures = []
 		self.image_n = counter.get_max()[0]
 		self.plots = []
 		
-		self.dimensions = [8, 2]
-		self.figure.set_tight_layout({"pad": .0})
+		self.dimensions = [2, 1]
+		self.figure_dimensions = (11, 8)
 		
-		i = 1
-		for key in list(self.data.data.keys())[:int(len(self.data.data.keys())/2)]:
-			temp = Plot(self, eval(key), (*self.dimensions, i))
-			temp.plot()
-			self.plots.append(temp)
-			
-			i += 1
-		
-		self.figure = figure[1]
-		self.figure.set_tight_layout({"pad": .0})
-		i = 1
-		for key in list(self.data.data.keys())[int(len(self.data.data.keys()) / 2):]:
-			temp = Plot(self, eval(key), (*self.dimensions, i))
-			temp.plot()
-			self.plots.append(temp)
-			
-			i += 1
-		
-		self.figure = figure
+		for population in iter_template[0]:
+			current_fig = plot.figure(figsize=self.figure_dimensions)
+			current_fig.set_tight_layout({"pad": .0})
+			i = 1
+			for location in iter_template[1]:
+				temp = Plot(self, current_fig, (population, location), (*self.dimensions, i), 50)
+				temp.plot()
+				self.plots.append(temp)
+				i += 1
+			self.figures.append(current_fig)
+	
+	def save(self, names):
+		for i, fig in enumerate(self.figures):
+			fig.savefig(names[i])
 	
 	def show(self):
-		for fig in self.figure:
+		for fig in self.figures:
 			fig.show()

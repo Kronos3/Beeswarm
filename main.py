@@ -7,7 +7,7 @@ from plot_grid import PlotGrid
 
 raw_data = []
 for x in csv.reader(open("data.csv", "r")):
-	temp = Clone(x, "sifisiiiis", [RawIndexMapping.NTOTAL, 0])
+	temp = Clone(x, "sifisiiiis", (RawIndexMapping.NTOTAL, 0))
 	if temp.add():
 		raw_data.append(temp)
 
@@ -17,15 +17,12 @@ image_counter = ImageCounter(
 	RawIndexMapping.IMAGE, RawIndexMapping.POPULATION, RawIndexMapping.DAY)
 image_counter.process()
 
-IMG_MAX = 6
-
 split_data = DictSet(raw_data.split_level([
 	RawIndexMapping.POPULATION, RawIndexMapping.DAY
 ]))
 
-split_location = split_data.split_cols([RawIndexMapping.NBASAL, RawIndexMapping.NSUPRA], ["basal", "supra"])
-
-main_figure = PlotGrid(split_location, image_counter, [plt.figure(figsize=(8,11)), plt.figure(figsize=(8,11))])
-main_figure.show()
-plt.show()
-#plt.savefig("out.png")
+split_location = split_data.split_cols([RawIndexMapping.NBASAL, RawIndexMapping.NSUPRA], ["basal", "supra"], 0)
+iter_template = (("Dlx1", "Slc1a3"), ("basal", "supra"))
+main_figure = PlotGrid(split_location, image_counter, plt, iter_template)
+# main_figure.show()
+main_figure.save(("dlx.png", "slc.png"))

@@ -14,7 +14,7 @@ cdef class DictSet:
 	def __init__ (self, data={}):
 		self.data = data
 	
-	def split_cols(self, indecies, selectors):
+	def split_cols(self, indecies, selectors, skip):
 		out = {}
 		
 		for key in self.data:
@@ -27,7 +27,8 @@ cdef class DictSet:
 				except KeyError:
 					out[new_key] = []
 				for clone in self.data[key]:
-					out[new_key].append (clone.data[indecies[i]])
+					if clone.data[indecies[i]] != skip:
+						out[new_key].append (clone.data[indecies[i]])
 		
 		return DictSet(out)
 	
