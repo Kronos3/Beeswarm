@@ -63,13 +63,19 @@ class Plot:
 			s=.5,
 			__s=10,
 			labelrotation="horizontal",
-			ax=self.figure.add_subplot(*self.plot_tuple), labels=self.x_labels)
-		ax.set_xlabel("Day & frequency")
-		ax.set_ylabel("Colony Size")
+			ax=self.figure.add_subplot(*self.plot_tuple), labels=self.x_labels,
+			col="white",
+			edgecolors="black"
+		)
+		if self.plot_tuple[2] != 1:
+			ax.set_xlabel("Day & frequency")
+		ax.set_ylabel("Colony Size (cells)")
 		ax.set_title(self.graph_label)
 		ax.set_ylim(bottom=1, top=self.cap)
-		ax.set_yticks((1, 10, 20, 30, 40, 50))
-		# ax.text(1, 1, text, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes)
+		ax.set_yticks((1, 10, 20, 30, 40))
+		ax.grid(color='black', linestyle='-', linewidth=.5, axis="y")
+		#self.figure.tight_layout()
+	# ax.text(1, 1, text, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes)
 
 
 class PlotGrid:
@@ -83,15 +89,17 @@ class PlotGrid:
 		self.dimensions = [2, 1]
 		self.figure_dimensions = (11, 8)
 		
-		for population in iter_template[0]:
+		for location in iter_template[0]:
 			current_fig = plot.figure(figsize=self.figure_dimensions)
 			current_fig.set_tight_layout({"pad": .0})
 			i = 1
-			for location in iter_template[1]:
-				temp = Plot(self, current_fig, (population, location), (*self.dimensions, i), 50)
+			for population in iter_template[1]:
+				temp = Plot(self, current_fig, (population, location), (*self.dimensions, i), 40)
 				temp.plot()
 				self.plots.append(temp)
 				i += 1
+			current_fig.tight_layout()
+			current_fig.subplots_adjust(top=.6, bottom=.5)
 			self.figures.append(current_fig)
 	
 	def save(self, names):

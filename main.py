@@ -22,7 +22,7 @@ split_data = DictSet(raw_data.split_level([
 ]))
 
 split_location = split_data.split_cols([RawIndexMapping.NBASAL, RawIndexMapping.NSUPRA], ["basal", "supra"], 0)
-iter_template = (("Dlx1", "Slc1a3"), ("basal", "supra"))
+iter_template = (("basal", "supra"), ("Dlx1", "Slc1a3"))
 main_figure = PlotGrid(split_location, image_counter, plt, iter_template)
 # main_figure.show()
-main_figure.save(("dlx.png", "slc.png"))
+main_figure.save(("basal.png", "supra.png"))
