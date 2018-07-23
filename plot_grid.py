@@ -38,7 +38,7 @@ class Plot:
 			current_data = normalize_data(self.parent.data.get(sel[0], day, sel[1]), c_normal)
 			
 			gm = round(float(stats.gmean(current_data)), 3)
-			cpi = len(current_data) * c_normal
+			cpi = len(current_data)  # already normalized
 			sd = round(float(stats.tstd(current_data)), 3)
 			text = "%s\nx̅: %s\nCol/img: %s\nσ: %s" % (
 				day, gm, cpi, sd)
@@ -74,8 +74,6 @@ class Plot:
 		ax.set_ylim(bottom=1, top=self.cap)
 		ax.set_yticks((1, 10, 20, 30, 40))
 		ax.grid(color='black', linestyle='-', linewidth=.5, axis="y")
-		#self.figure.tight_layout()
-	# ax.text(1, 1, text, horizontalalignment='right', verticalalignment='top', transform=ax.transAxes)
 
 
 class PlotGrid:
@@ -105,7 +103,3 @@ class PlotGrid:
 	def save(self, names):
 		for i, fig in enumerate(self.figures):
 			fig.savefig(names[i])
-	
-	def show(self):
-		for fig in self.figures:
-			fig.show()

@@ -11,7 +11,9 @@ cpdef enum RawIndexMapping:
 	LOCATION
 
 cdef class DictSet:
-	def __init__ (self, data={}):
+	def __init__ (self, data=None):
+		if data is None:
+			data = []
 		self.data = data
 	
 	def split_cols(self, indecies, selectors, skip):
@@ -32,6 +34,9 @@ cdef class DictSet:
 		
 		return DictSet(out)
 	
+	def get_col(self, index, *args):
+		return [x[index] for x in self.get(*args)]
+	
 	def get (self, *args):
 		return self.data[str(list(args))]
 	
@@ -39,7 +44,9 @@ cdef class DictSet:
 		return str(self.data)
 
 cdef class Set:
-	def __init__(self, data=[]):
+	def __init__(self, data=None):
+		if data is None:
+			data = []
 		self.data = data
 	
 	def pop (self, prop, value):
