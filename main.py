@@ -96,7 +96,6 @@ def gen_stddev():
 	barfig = plt.figure(figsize=(8, 11))
 	daylist = (3.5, 7.0, 14.0, 30.0, 60.0, 90.0, 180.0, 365.0)
 	for i, pop in enumerate(("Dlx1", "Slc1a3")):
-		__max = len(image_counter.get_max())
 		Barchart(
 			barfig.add_subplot(2, 1, i + 1),
 			3,
@@ -130,6 +129,11 @@ def main(args):
 	
 	for arg in args[1:]:
 		function_mappings[arg]()
+	
+	cmd = input("> ")
+	while len(cmd):
+		exec("print(%s)" % cmd)
+		cmd = input("> ")
 
 
 main(sys.argv)
