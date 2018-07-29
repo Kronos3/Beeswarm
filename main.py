@@ -113,6 +113,35 @@ def gen_stddev():
 	barfig.savefig("stddev.png")
 
 
+def write_day(f, __list, delim):
+	f.write(delim.join(str(y) for y in __list))
+	f.write("\n")
+
+
+def export():
+	dl = (3.5, 7.0, 14.0, 30.0, 60.0, 90.0, 180.0, 365.0)
+	f = open("export.csv", "w+")
+	
+	delim = " "
+	
+	# Export image counts
+	for population in ("Dlx1", "Slc1a3"):
+		for day in dl:
+			f.write(str(len(image_counter.out["%s,%s" % (population, day)])))
+			if day != dl[-1]:
+				f.write(delim)
+		f.write("\n")
+	# Export data
+	for population in ("Dlx1", "Slc1a3"):
+		for location in ("basal", "supra", "total"):
+			for day in dl:
+				if location == "total":
+					write_day(f, split_data.get_col(RawIndexMapping.NTOTAL, population, day), delim)
+				else:
+					write_day(f, split_location.get(population, day, location), delim)
+	f.close()
+
+
 def main(args):
 	def gen_all():
 		for key in function_mappings:
@@ -124,6 +153,7 @@ def main(args):
 		"gmean": gen_gmean,
 		"colpimg": gen_colpimg,
 		"stddev": gen_stddev,
+		"export": export,
 		"all": gen_all,
 	}
 	

@@ -1,0 +1,163 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      5679,        155]
+NotebookOptionsPosition[      5298,        141]
+NotebookOutlinePosition[      5631,        156]
+CellTagsIndexPosition[      5588,        153]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"SetDirectory", "[", 
+   RowBox[{"NotebookDirectory", "[", "]"}], "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"file", " ", "=", " ", 
+   RowBox[{"ReadList", "[", 
+    RowBox[{"\"\<export.csv\>\"", ",", " ", "Number", ",", " ", 
+     RowBox[{"RecordLists", "\[Rule]", "True"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"max", " ", "=", " ", 
+   RowBox[{"Max", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"Max", "[", 
+       RowBox[{"file", "[", 
+        RowBox[{"[", "1", "]"}], "]"}], "]"}], ",", " ", 
+      RowBox[{"Max", "[", 
+       RowBox[{"file", "[", 
+        RowBox[{"[", "2", "]"}], "]"}], "]"}]}], "}"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"daylist", " ", "=", " ", 
+    RowBox[{"{", 
+     RowBox[{
+     "3.5", ",", "7.0", ",", "14.0", ",", "30.0", ",", "60.0", ",", "90.0", 
+      ",", "180.0", ",", "365.0"}], "}"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"popn", " ", "=", " ", "2"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"dayn", " ", "=", " ", 
+   RowBox[{"Length", "[", "daylist", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"locationn", " ", "=", " ", "3"}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"populations", " ", "=", " ", 
+   RowBox[{"{", 
+    RowBox[{"\"\<Dlx1\>\"", ",", " ", "\"\<Slc1a3\>\""}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"days", " ", "=", " ", 
+   RowBox[{"{", 
+    RowBox[{
+    "\"\<3.5\>\"", ",", "\"\<7.0\>\"", ",", "\"\<14.0\>\"", ",", 
+     "\"\<30.0\>\"", ",", "\"\<60.0\>\"", ",", "\"\<90.0\>\"", ",", 
+     "\"\<180.0\>\"", ",", "\"\<365.0\>\""}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"locations", " ", "=", " ", 
+    RowBox[{"{", 
+     RowBox[{
+     "\"\<Basal\>\"", ",", " ", "\"\<Supra-basal\>\"", ",", " ", 
+      "\"\<Total\>\""}], "}"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"dlx", ",", " ", "slc"}], "}"}], " ", "=", " ", 
+   RowBox[{"Range", "[", "popn", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"basal", ",", " ", "supra", ",", " ", "total"}], "}"}], " ", "=", 
+   " ", 
+   RowBox[{"Range", "[", "locationn", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+    "day3", ",", " ", "day7", ",", "day14", ",", "day30", ",", " ", "day60", 
+     ",", "day90", ",", "day180", ",", "day365"}], "}"}], " ", "=", " ", 
+   RowBox[{"Range", "[", "dayn", "]"}]}], 
+  ";"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.74185737779128*^9, 3.741857418451189*^9}, {
+   3.741857512718659*^9, 3.741857518146532*^9}, {3.741857946765472*^9, 
+   3.741857971448227*^9}, {3.741858013537339*^9, 3.741858162346813*^9}, {
+   3.741858211426526*^9, 3.7418582935855217`*^9}, {3.74185835258037*^9, 
+   3.741858426839715*^9}, {3.741858473579615*^9, 3.741858609618782*^9}, {
+   3.741858706769227*^9, 3.741858714031139*^9}, {3.741858744154461*^9, 
+   3.7418587742893867`*^9}, {3.741858814386888*^9, 3.741859295685261*^9}, 
+   3.741859344716529*^9, {3.741859418563841*^9, 3.741859434338131*^9}, {
+   3.741859814669071*^9, 3.7418598695180187`*^9}, {3.741860044179063*^9, 
+   3.741860046068797*^9}, {3.741860078657045*^9, 3.741860117445726*^9}, {
+   3.741860212615177*^9, 3.7418602148814373`*^9}, {3.741860624123156*^9, 
+   3.7418606876704473`*^9}},
+ CellLabel->
+  "In[325]:=",ExpressionUUID->"14ab3ab7-0a36-49b8-8500-06b4286de919"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"fileIndex", " ", "=", " ", "3"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"data", " ", "=", " ", 
+   RowBox[{"Table", "[", 
+    RowBox[{
+     RowBox[{"file", "[", 
+      RowBox[{"[", 
+       RowBox[{"fileIndex", "++"}], "]"}], "]"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"pop", ",", " ", "popn"}], "}"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"loc", ",", " ", "locationn"}], "}"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"day", ",", " ", "dayn"}], "}"}]}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.7418594676106462`*^9, 3.741859486605517*^9}, {
+  3.741859670755584*^9, 3.741859676553012*^9}, {3.741859874022315*^9, 
+  3.741859900964796*^9}, {3.7418600117244587`*^9, 3.7418600123012323`*^9}, {
+  3.741860079877557*^9, 3.741860080544261*^9}, {3.741860232124668*^9, 
+  3.741860237346341*^9}, {3.741860484294826*^9, 3.741860515738703*^9}, {
+  3.741860596198557*^9, 3.7418605975317802`*^9}, {3.7418609324696836`*^9, 
+  3.7418609349094543`*^9}},
+ CellLabel->
+  "In[338]:=",ExpressionUUID->"6024d756-6de9-41d7-a480-5ecd09cd75c7"]
+},
+WindowSize->{1920, 927},
+WindowMargins->{{0, Automatic}, {0, Automatic}},
+FrontEndVersion->"11.3 for Linux x86 (64-bit) (March 6, 2018)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 3638, 93, 400, "Input",ExpressionUUID->"14ab3ab7-0a36-49b8-8500-06b4286de919"],
+Cell[4199, 115, 1095, 24, 55, "Input",ExpressionUUID->"6024d756-6de9-41d7-a480-5ecd09cd75c7"]
+}
+]
+*)
+
