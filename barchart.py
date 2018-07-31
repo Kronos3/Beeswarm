@@ -14,7 +14,7 @@ class Barchart:
 		
 		self.ax = ax
 		self.g_index = np.array([np.log2(x) for x in self.labels])
-		self.bar_width = 0.15
+		self.bar_width = 0.07
 	
 	def reset_axis(self):
 		self.ax.clear()
@@ -31,9 +31,9 @@ class Barchart:
 		
 		for i in range(self.bar_n):
 			self.ax.bar(
-				self.g_index + i * self.bar_width,
+				self.g_index + (((i + 2) - self.bar_n / 2) * self.bar_width),
 				data[i],
 				self.bar_width,
-				alpha=0.4, color=self.color_seq[i],
+				alpha=1, color=self.color_seq[i],
 				label=self.key_labels[i])
 		self.ax.legend()

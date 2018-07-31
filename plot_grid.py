@@ -28,17 +28,22 @@ class Plot:
 	def __init__(self, parent, figure, sel, plot_t, cap):
 		self.parent = parent
 		self.cap = cap
-		self.normalize = []
 		self.data = []
 		self.x_labels = []
 		self.selector = sel
 		
 		for day in Plot.day_order:
+			data = self.parent.data.get(sel[0], day, sel[1], sel[2])
+			if not len(data):
+				text = "%s\nx̅: %s\nCol/img: %s\nσ: %s" % (
+					day, 0, 0, 0)
+				self.x_labels.append(text)
+				self.data.append(Plot.cap([0], self.cap))
+				continue
 			c_normal = parent.image_n / len(parent.image_counter.out["%s,%s" % (sel[0], day)])
-			self.normalize.append(c_normal)
-			current_data = normalize_data(self.parent.data.get(sel[0], day, sel[1]), c_normal)
+			current_data = normalize_data(data, c_normal)
 			gm = round(float(stats.gmean(current_data)), 3)
-			cpi = len(current_data) * c_normal
+			cpi = round(len(current_data) * c_normal, 3)
 			sd = round(float(stats.tstd(current_data)), 3)
 			text = "%s\nx̅: %s\nCol/img: %s\nσ: %s" % (
 				day, gm, cpi, sd)
@@ -47,7 +52,7 @@ class Plot:
 		
 		self.figure = figure
 		self.plot_tuple = plot_t
-		self.graph_label = "%s population, %s" % (sel[0], sel[1].replace("supra", "supra-basal"))
+		self.graph_label = "%s population, %s %s" % (sel[0], sel[1], sel[2].replace("supra", "supra-basal"))
 	
 	@staticmethod
 	def cap(data, cap):
@@ -57,12 +62,6 @@ class Plot:
 		return data
 	
 	def plot(self):
-		if self.selector[0] == "Slc1a3" and self.selector[1] == "supra":
-			for i, day in enumerate(self.data):
-				if 0 in day:
-					print(day)
-					print(Plot.day_order[i])
-		
 		bs, ax = beeswarm(
 			self.data,
 			method="center",
@@ -89,24 +88,28 @@ class PlotGrid:
 		self.figures = []
 		self.image_n = counter.get_max()[0]
 		self.plots = []
+		self.names = []
 		self.cap = cap
 		
-		self.dimensions = [2, 1]
+		self.dimensions = [3, 1]
 		self.figure_dimensions = (11, 8)
 		
 		for location in iter_template[0]:
-			current_fig = plot.figure(figsize=self.figure_dimensions)
-			current_fig.set_tight_layout({"pad": .0})
-			i = 1
-			for population in iter_template[1]:
-				temp = Plot(self, current_fig, (population, location), (*self.dimensions, i), self.cap)
-				temp.plot()
-				self.plots.append(temp)
-				i += 1
-			current_fig.tight_layout()
-			current_fig.subplots_adjust(top=.6, bottom=.5)
-			self.figures.append(current_fig)
+			for z_location in iter_template[1]:
+				current_fig = plot.figure(figsize=self.figure_dimensions)
+				current_fig.set_tight_layout({"pad": .0})
+				i = 1
+				for population in iter_template[2]:
+					temp = Plot(self, current_fig, (population, location, z_location), (*self.dimensions, i), self.cap)
+					temp.plot()
+					self.plots.append(temp)
+					i += 1
+				self.names.append("%s-%s.png" % (location, z_location))
+				current_fig.tight_layout()
+				current_fig.subplots_adjust(top=.6, bottom=.5)
+				self.figures.append(current_fig)
 	
-	def save(self, names):
+	def save(self):
+		print(self.names)
 		for i, fig in enumerate(self.figures):
-			fig.savefig(names[i])
+			fig.savefig(self.names[i])

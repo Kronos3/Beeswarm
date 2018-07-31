@@ -13,8 +13,29 @@ cpdef enum RawIndexMapping:
 cdef class DictSet:
 	def __init__ (self, data=None):
 		if data is None:
-			data = []
+			data = {}
 		self.data = data
+	
+	def split_col(self, index, selectors, default, apply_function):
+		out = {}
+		for key in self.data:
+			for clone in self.data[key]:
+				new_key = eval(key)
+				parsed = apply_function(clone.data[index])
+				if parsed not in selectors:
+					print("location %s for key %s not found (%s)" % (parsed, key, clone.data[index]))
+					parsed = default
+				
+				new_key.append (parsed)
+				new_key = str(new_key)
+				
+				try:
+					out[new_key]
+				except KeyError:
+					out[new_key] = []
+				out[new_key].append(clone)
+		
+		return DictSet(out)
 	
 	def split_cols(self, indecies, selectors, skip):
 		out = {}
@@ -38,7 +59,12 @@ cdef class DictSet:
 		return [x[index] for x in self.get(*args)]
 	
 	def get (self, *args):
-		return self.data[str(list(args))]
+		key = str(list(args))
+		try:
+			self.data[key]
+		except KeyError:
+			self.data[key] = []
+		return self.data[key]
 	
 	def __str__ (self):
 		return str(self.data)

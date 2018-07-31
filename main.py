@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 from plot_grid import PlotGrid
 from barchart import Barchart
 from scipy import stats
+import readline
+import traceback
 import sys
+import re
 
 
 raw_data = []
@@ -24,29 +27,69 @@ split_data = DictSet(raw_data.split_level([
 	RawIndexMapping.POPULATION, RawIndexMapping.DAY
 ]))
 
-split_location = split_data.split_cols([RawIndexMapping.NBASAL, RawIndexMapping.NSUPRA], ["basal", "supra"], 0)
+
+def handle_location(unparsed: str):
+	# typos
+	typos = {
+		"intescale": "interscale",
+		"intersscale": "interscale",
+		"Sacle": "scale"
+	}
+	for typo in typos:
+		unparsed = unparsed.replace(typo, typos[typo])
+	
+	split = [y.strip() for y in re.split(",? ?", unparsed.lower().strip(" -?"))]
+	return '-'.join(split)
 
 
-def apply_function(data, population, location, __function):
+split_location = split_data.split_col(
+	RawIndexMapping.LOCATION,
+	["scale", "interscale-line", "interscale-non-line"],
+	"interscale", handle_location)
+split_location = split_location.split_cols([RawIndexMapping.NBASAL, RawIndexMapping.NSUPRA], ["basal", "supra"], 0)
+
+
+def apply_function(data, population, location, zlocation, __function):
 	__daylist = (3.5, 7.0, 14.0, 30.0, 60.0, 90.0, 180.0, 365.0)
 	if location == "total":
 		return [__function(data.get_col(RawIndexMapping.NTOTAL, population, day)) for day in __daylist]
 	else:
-		return [__function(data.get(population, day, location)) for day in __daylist]
+		return [__function(data.get(population, day, location, zlocation)) for day in __daylist]
 
 
-def colpimg(data, counter, __max, population, location):
+def colpimg(data, counter, __max, population, location, zlocation):
 	dl = (3.5, 7.0, 14.0, 30.0, 60.0, 90.0, 180.0, 365.0)
 	normals = [__max / len(counter.out["%s,%s" % (population, day)]) for day in dl]
 	if location == "total":
 		return [len(data.get_col(RawIndexMapping.NTOTAL, population, dl[i])) * normals[i] for i in range(len(dl))]
-	return [len(data.get(population, dl[i], location)) * normals[i] for i in range(len(dl))]
+	return [len(data.get(population, dl[i], location, zlocation)) * normals[i] for i in range(len(dl))]
 
 
 def gen_beeswarms():
-	iter_template = (("basal", "supra"), ("Dlx1", "Slc1a3"))
+	iter_template = (("scale", "interscale-line", "interscale-non-line"), ("basal", "supra"), ("Dlx1", "Slc1a3"))
 	main_figure = PlotGrid(split_location, image_counter, plt, iter_template)
-	main_figure.save(("basal.png", "supra.png"))
+	main_figure.save()
+
+
+key_labels = (
+				'Interscale line, Basal',
+				'Interscale non-line, Basal',
+				'Scale, Basal',
+				'Interscale line, Supra-basal',
+				'Interscale non-line, Supra-basal',
+				'Scale, Supra-basal',
+				"Total"
+			)
+colors = (
+				"#1B2F33",
+				"#28502E",
+				"#47682C",
+				"#8C7051",
+				"#EF3054",
+				"#70A0AF",
+				"#706993",
+				"#331E38",
+			)
 
 
 def gen_gmean():
@@ -55,17 +98,21 @@ def gen_gmean():
 	for i, pop in enumerate(("Dlx1", "Slc1a3")):
 		Barchart(
 			barfig.add_subplot(2, 1, i + 1),
-			3,
-			("green", "blue", "orange"),
-			("Basal", "Supra", "Total"),
+			7,
+			colors,
+			key_labels,
 			daylist,
 			"Geometric Mean colony size for %s" % pop,
 			"Day",
 			"Geometric Mean colony size"
 		).render_data((
-			apply_function(split_location, pop, "basal", stats.gmean),
-			apply_function(split_location, pop, "supra", stats.gmean),
-			apply_function(split_data, pop, "total", stats.gmean)
+			apply_function(split_location, pop, "interscale-line", "basal", stats.tstd),
+			apply_function(split_location, pop, "interscale-non-line", "basal", stats.tstd),
+			apply_function(split_location, pop, "scale", "basal", stats.tstd),
+			apply_function(split_location, pop, "interscale-line", "supra", stats.tstd),
+			apply_function(split_location, pop, "interscale-non-line", "supra", stats.tstd),
+			apply_function(split_location, pop, "scale", "supra", stats.tstd),
+			apply_function(split_data, pop, "total", "", stats.tstd)
 		))
 	barfig.savefig("gmean.png")
 
@@ -74,21 +121,26 @@ def gen_colpimg():
 	barfig = plt.figure(figsize=(8, 11))
 	daylist = (3.5, 7.0, 14.0, 30.0, 60.0, 90.0, 180.0, 365.0)
 	for i, pop in enumerate(("Dlx1", "Slc1a3")):
-		__max = len(image_counter.get_max())
+		__max = image_counter.get_max()[0]
+		graph_data = (
+			colpimg(split_location, image_counter, __max, pop, "interscale-line", "basal"),
+			colpimg(split_location, image_counter, __max, pop, "interscale-non-line", "basal"),
+			colpimg(split_location, image_counter, __max, pop, "scale", "basal"),
+			colpimg(split_location, image_counter, __max, pop, "interscale-line", "supra"),
+			colpimg(split_location, image_counter, __max, pop, "interscale-non-line", "supra"),
+			colpimg(split_location, image_counter, __max, pop, "scale", "supra"),
+			colpimg(split_data, image_counter, __max, pop, "total", "")
+		)
 		Barchart(
 			barfig.add_subplot(2, 1, i + 1),
-			3,
-			("green", "blue", "orange"),
-			("Basal", "Supra", "Total"),
+			7,
+			colors,
+			key_labels,
 			daylist,
 			"Colonies per image %s" % pop,
 			"Day",
 			"Colonies per image"
-		).render_data((
-			colpimg(split_location, image_counter, __max, pop, "basal"),
-			colpimg(split_location, image_counter, __max, pop, "supra"),
-			colpimg(split_data, image_counter, __max, pop, "total")
-		))
+		).render_data(graph_data)
 	barfig.savefig("colpimg.png")
 
 
@@ -98,23 +150,30 @@ def gen_stddev():
 	for i, pop in enumerate(("Dlx1", "Slc1a3")):
 		Barchart(
 			barfig.add_subplot(2, 1, i + 1),
-			3,
-			("green", "blue", "orange"),
-			("Basal", "Supra", "Total"),
+			7,
+			colors,
+			key_labels,
 			daylist,
 			"Standard Deviation of colony sizes %s" % pop,
 			"Day",
 			"Standard Deviation"
 		).render_data((
-			apply_function(split_location, pop, "basal", stats.tstd),
-			apply_function(split_location, pop, "supra", stats.tstd),
-			apply_function(split_data, pop, "total", stats.tstd)
+			apply_function(split_location, pop, "interscale-line", "basal", stats.tstd),
+			apply_function(split_location, pop, "interscale-non-line", "basal", stats.tstd),
+			apply_function(split_location, pop, "scale", "basal", stats.tstd),
+			apply_function(split_location, pop, "interscale-line", "supra", stats.tstd),
+			apply_function(split_location, pop, "interscale-non-line", "supra", stats.tstd),
+			apply_function(split_location, pop, "scale", "supra", stats.tstd),
+			apply_function(split_data, pop, "total", "", stats.tstd)
 		))
 	barfig.savefig("stddev.png")
 
 
 def write_day(f, __list, delim):
-	f.write(delim.join(str(y) for y in __list))
+	if not len(__list):
+		f.write("0")
+	else:
+		f.write(delim.join(str(y) for y in __list))
 	f.write("\n")
 
 
@@ -133,12 +192,20 @@ def export():
 		f.write("\n")
 	# Export data
 	for population in ("Dlx1", "Slc1a3"):
-		for location in ("basal", "supra", "total"):
-			for day in dl:
-				if location == "total":
-					write_day(f, split_data.get_col(RawIndexMapping.NTOTAL, population, day), delim)
-				else:
-					write_day(f, split_location.get(population, day, location), delim)
+		for location in (
+				('scale', 'basal'),
+				('scale', 'supra'),
+				('interscale-line', 'basal'),
+				('interscale-line', 'supra'),
+				('interscale-non-line', 'basal'),
+				('interscale-non-line', 'supra'),
+				"total"
+		):
+				for day in dl:
+					if location == "total":
+						write_day(f, split_data.get_col(RawIndexMapping.NTOTAL, population, day), delim)
+					else:
+						write_day(f, split_location.get(population, day, location[0], location[1]), delim)
 	f.close()
 
 
@@ -159,11 +226,17 @@ def main(args):
 	
 	for arg in args[1:]:
 		function_mappings[arg]()
-	
-	cmd = input("> ")
-	while len(cmd):
-		exec("print(%s)" % cmd)
-		cmd = input("> ")
+		
+	while True:
+		try:
+			exec("print(%s)" % input("> "))
+		except KeyboardInterrupt:
+			print("^C")
+		except EOFError:
+			print("^D")
+			break
+		except Exception:
+			print(traceback.format_exc())
 
 
 main(sys.argv)
